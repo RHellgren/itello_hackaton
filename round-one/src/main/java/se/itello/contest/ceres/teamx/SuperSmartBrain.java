@@ -41,8 +41,7 @@ public class SuperSmartBrain implements Brain {
             exempelvis så verkar första kontraktet [som ligger på (100.0,100.0)] plockas upp när skeppet passerar ~(100.0, 67.0),
             min teori är att koordinaterna överensstämmer med centrum på bägge och att kollisionen sker när deras yttre skal korsas.
 
-            Skeppets hastighet verkar vara konstant ökande, vilket inte är så konstigt med tanke på 'THRUST', lyckas dock inte
-            hitta något kommando som inte ökar hastigheten till nästa runda.
+            Förutom kommandona nertill så funkar det att spotta ut command = null för att avvakta till nästa körning och bibehålla velocity
          */
 
         // Dummy example of how the ship could be controlled, doesn't work unfortunately :-(

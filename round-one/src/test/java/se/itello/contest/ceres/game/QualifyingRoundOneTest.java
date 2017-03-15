@@ -26,8 +26,8 @@ public class QualifyingRoundOneTest {
     @Before
     public void setUp() throws Exception {
         // Default run. Use your brain here!
-        //gamePlayer = new GamePlayer(new FullThrottleBrain());
-        gamePlayer = new GamePlayer(new SuperSmartBrain());
+        gamePlayer = new GamePlayer(new FullThrottleBrain());
+        //gamePlayer = new GamePlayer(new SuperSmartBrain());
 
         // Test to run your jar.
         // This must run for the solution to be valid. Watch out for security exceptions!
