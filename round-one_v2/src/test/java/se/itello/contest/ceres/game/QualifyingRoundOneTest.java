@@ -5,6 +5,7 @@ import org.junit.Test;
 import se.itello.contest.ceres.api.Position;
 import se.itello.contest.ceres.api.TestMode;
 import se.itello.contest.ceres.teamx.FullThrottleBrain;
+import se.itello.contest.ceres.teamx.SuperSmartBrain;
 
 import static org.junit.Assert.assertTrue;
 
@@ -26,6 +27,7 @@ public class QualifyingRoundOneTest {
     public void setUp() throws Exception {
         // Default run. Use your brain here!
         gamePlayer = new GamePlayer(new FullThrottleBrain());
+        //gamePlayer = new GamePlayer(new SuperSmartBrain());
 
         // Test to run your jar.
         // This must run for the solution to be valid. Watch out for security exceptions!
