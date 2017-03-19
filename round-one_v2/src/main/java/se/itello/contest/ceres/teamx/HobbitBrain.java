@@ -13,6 +13,8 @@ public class HobbitBrain implements Brain {
     public Collection<ShipCommand> commandsToSend(GameState state) {
 
         EntityState packet = findClosestEntity(state);
+        System.out.println("Packet: " + packet.getPosition().getX() + ", " + packet
+                .getPosition().getY());
         ShipState ship = state.getShipState();
 
         double xdist = packet.getPosition().getX() - ship.getPosition().getX();
@@ -30,8 +32,12 @@ public class HobbitBrain implements Brain {
         }
 
 
-        if ((angle - ship.getRotation()) < 5){
-            return Collections.singleton(ShipCommand.THRUST);
+        if (Math.abs(angle - ship.getRotation()) < 5){
+            if (ship.getVelocity().getSpeed() > 50){
+                return Collections.singleton(null);
+            } else {
+                return Collections.singleton(ShipCommand.THRUST);
+            }
         } else {
             return Collections.singleton(ShipCommand.TURN_PORT);
         }
