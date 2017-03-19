@@ -10,16 +10,7 @@ import java.util.Iterator;
 
 public class HobbitBrain implements Brain {
 
-    public Collection<ShipCommand> commandsToSend(GameState state) {
-
-        System.out.println("------------------------");
-        System.out.println("Ship is at: " + state.getShipState().getPosition());
-        System.out.println("Closest entity: " + findClosestEntity(state).getPosition().toString());
-        System.out.println("------------------------");
-
-        return Collections.singleton(ShipCommand.THRUST);
-
-    }
+    public Collection<ShipCommand> commandsToSend(GameState state) {return Collections.singleton(ShipCommand.THRUST);}
 
     public String name() {
         return "Full Throttle";
