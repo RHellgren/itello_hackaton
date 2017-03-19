@@ -10,11 +10,16 @@ import java.util.Collections;
 
 public class HobbitBrain implements Brain {
 
+    private int entListSize = Integer.MAX_VALUE;
+    private EntityState packet;
+
     public Collection<ShipCommand> commandsToSend(GameState state) {
 
-        EntityState packet = findClosestEntity(state);
-        System.out.println("Packet: " + packet.getPosition().getX() + ", " + packet
-                .getPosition().getY());
+        if (state.getContractStates().size() < entListSize){
+            packet = findClosestEntity(state);
+            entListSize = state.getContractStates().size();
+        }
+
         ShipState ship = state.getShipState();
 
         double xdist = packet.getPosition().getX() - ship.getPosition().getX();
@@ -33,13 +38,15 @@ public class HobbitBrain implements Brain {
 
 
         if (Math.abs(angle - ship.getRotation()) < 5){
-            if (ship.getVelocity().getSpeed() > 50){
+            if (ship.getVelocity().getSpeed() > 100){
                 return Collections.singleton(null);
             } else {
                 return Collections.singleton(ShipCommand.THRUST);
             }
-        } else {
+        } else if (angle - ship.getRotation() > 0){
             return Collections.singleton(ShipCommand.TURN_PORT);
+        } else {
+            return Collections.singleton(ShipCommand.TURN_STARBOARD);
         }
 
     }
