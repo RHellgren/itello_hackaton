@@ -10,26 +10,9 @@ import java.util.Collections;
 
 public class HobbitBrain implements Brain {
 
-    public Collection<ShipCommand> commandsToSend(GameState state) {return Collections.singleton(ShipCommand.THRUST);}
-    private boolean odd = true;
-
     public Collection<ShipCommand> commandsToSend(GameState state) {
-        ArrayList<ShipCommand> commands = new ArrayList<ShipCommand>();
 
-        System.out.println(state.getShipState().getVelocity().toString());
-
-        double xpacket = state.getContractStates().iterator().next().getPosition().getX();
-        double ypacket = state.getContractStates().iterator().next().getPosition().getY();
-
-        System.out.println("X Packet: " + xpacket + " Y Packet: " + ypacket);
-
-        double xship = state.getShipState().getPosition().getX();
-        double yship = state.getShipState().getPosition().getY();
-
-        System.out.println("X Ship: " + xship + " Y Ship: " + yship);
-
-
-        EntityState packet;
+        EntityState packet = findClosestEntity(state);
         ShipState ship = state.getShipState();
 
         double xdist = packet.getPosition().getX() - ship.getPosition().getX();
