@@ -31,30 +31,23 @@ public class HobbitBrain implements Brain {
             return Collections.singleton(ShipCommand.SHOOT);
         }
 
-        return driveTowardsPosition(state, target);
-        /*
         Collection<ShipCommand> commands = new ArrayList<>();
 
-        List<EntityState> enemyShips = new ArrayList<>(state.getEnemyStates());
-
-        List<EntityState> asteroids = new ArrayList<>(state.getAsteroidStates());
-        List<EntityState> asteroids_ML = new ArrayList<>();
-        List<EntityState> asteroids_S = new ArrayList<>();
-
-        sortAsteroids(asteroids, asteroids_ML, asteroids_S);
-
-        List<EntityState> entitiesInRadius = findThingsInZone(5.0, state.getShipState(), asteroids, enemyShips);
+        List<EntityState> entitiesInRadius = findThingsInZone(100.0, state);
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
             if (entitiesInRadius.get(i).getSize() < 30) {
-                commands.addAll(driveTowardsPosition(p1));
-                commands.add(ShipCommand.SHOOT);
+                Collection<ShipCommand> result = driveTowardsPosition(state, entitiesInRadius.get(i).getPosition());
+                if (result != null) {
+                    commands.addAll(driveTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
+                    commands.add(ShipCommand.SHOOT);
+                    return commands;
+                }
             }
         }
 
-
-        return Collections.singleton(ShipCommand.THRUST);*/
+        return driveTowardsPosition(state, target);
     }
 
     private void addNodes(GameState state) {
@@ -113,19 +106,23 @@ public class HobbitBrain implements Brain {
         return enemies.get(closestEnemy);
     }
 
-    private List<EntityState> findThingsInZone(double radius, ShipState ship, List<EntityState> asteroids,
-                                               List<EntityState> enemyShips) {
+    private List<EntityState> findThingsInZone(double radius, GameState state) {
 
         List<EntityState> inRadius = new ArrayList<>();
+        ShipState ship = state.getShipState();
+
+        List<EntityState> enemyShips = new ArrayList<>(state.getEnemyStates());
+        List<EntityState> asteroids = new ArrayList<>(state.getAsteroidStates());
+
         List<EntityState> allEntityStates = new ArrayList<>(enemyShips);
         allEntityStates.addAll(asteroids);
 
         Iterator<EntityState> iterator = allEntityStates.iterator();
 
         while(iterator.hasNext()) {
-            EntityState state = iterator.next();
-            if(calculateDistance(state.getPosition(), ship.getPosition()) <= radius) {
-                inRadius.add(state);
+            EntityState next = iterator.next();
+            if(calculateDistance(next.getPosition(), ship.getPosition()) <= radius) {
+                inRadius.add(next);
             }
         }
 
