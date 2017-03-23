@@ -1,83 +1,51 @@
 package se.itello.contest.ceres.teamx;
 
 
+import javafx.geometry.Pos;
 import se.itello.contest.ceres.api.*;
 import se.itello.contest.ceres.api.ShipCommand;
 import se.itello.contest.ceres.api.GameState;
 import se.itello.contest.ceres.api.Brain;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 
 public class HobbitBrain implements Brain {
 
     private int entListSize = Integer.MAX_VALUE;
     private EntityState packet;
+    private Position polestar = new Position(0.0, 0.0);
+
 
     public Collection<ShipCommand> commandsToSend(GameState state) {
-
-        if (state.getAsteroidStates().size() < entListSize){
-            packet = findClosestEntity(state);
-            entListSize = state.getAsteroidStates().size();
-        }
-
         ShipState ship = state.getShipState();
-
-        double xdist = packet.getPosition().getX() - ship.getPosition().getX();
-        double ydist = packet.getPosition().getY() - ship.getPosition().getY();
-
-        double angle = Math.toDegrees(Math.atan(ydist/xdist));
-
-
-        if (xdist >= 0){
-            if (ydist < 0){
-                angle = 360 + angle;
-            }
-        } else {
-            angle = 180 + angle;
-        }
-
-
-        if (Math.abs(angle - ship.getRotation()) < 5){
-            if (ship.getVelocity().getSpeed() > 100){
-                return Collections.singleton(null);
-            } else {
-                return Collections.singleton(ShipCommand.THRUST);
-            }
-        } else if (angle - ship.getRotation() > 0){
-            return Collections.singleton(ShipCommand.TURN_PORT);
-        } else {
-            return Collections.singleton(ShipCommand.TURN_STARBOARD);
-        }
+        return Collections.singleton(ShipCommand.THRUST);
 
     }
 
-
-    private EntityState findClosestEntity(GameState state) {
-        Iterator<EntityState> entities_iter = state.getAsteroidStates().iterator();
-        Position shipPosition = state.getShipState().getPosition();
-
-        EntityState tempEntity, closestEntity = null;
-        double tempDistance, closestDistance = Double.MAX_VALUE;
-
-        while(entities_iter.hasNext()) {
-            tempEntity = entities_iter.next();
-            tempDistance = calculateDistance(shipPosition, tempEntity.getPosition());
-
-            if (tempDistance < closestDistance) {
-                closestDistance = tempDistance;
-                closestEntity = tempEntity;
-            }
-        }
-
-        return closestEntity;
-    }
 
     // Note: Sqrt not needed as the distances will still have same relations
     private double calculateDistance(Position a, Position b) {
         return Math.pow((b.getX() - a.getX()), 2.0) +  Math.pow((b.getY() - a.getY()), 2.0);
     }
+
+
+
+
+    private EntityState getClosestEnemy(GameState state) {
+        ShipState ship = state.getShipState();
+        List<EntityState> enemies = new ArrayList<>(state.getEnemyStates());
+        int closestEnemy = -1;
+        double closestDistance = Double.MAX_VALUE;
+        for (int i=0; i<enemies.size(); i++) {
+            if(calculateDistance(ship.getPosition(), enemies.get(i).getPosition()) < closestDistance) {
+                closestDistance = calculateDistance(ship.getPosition(), enemies.get(i).getPosition());
+                closestEnemy = i;
+            }
+        }
+
+        return enemies.get(closestEnemy);
+    }
+
 
     public String name() {
         return "Frodo";
