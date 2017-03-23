@@ -33,17 +33,32 @@ public class HobbitBrain implements Brain {
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
-            if (entitiesInRadius.get(i).getSize() < 30) {
+            if (entitiesInRadius.get(i).getSize() == 25 || entitiesInRadius.get(i).getSize() == 75) {
                 Collection<ShipCommand> result = driveTowardsPosition(state, entitiesInRadius.get(i).getPosition());
                 if (result != null) {
-                    commands.addAll(driveTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
+                    commands.addAll(rotateTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
                     commands.add(ShipCommand.SHOOT);
                     return commands;
                 }
             }
+            else { // large/medium asteroid
+                return driveTowardsPosition(state,
+                        findOppositePosition(state.getShipState().getPosition(), entitiesInRadius.get(i).getPosition()));
+            }
         }
 
         return driveTowardsPosition(state, target);
+    }
+
+    private Position findOppositePosition(Position shipPosition, Position evilPosition) {
+        double result_x = 0.0;
+        double result_y = 0.0;
+
+        result_x = shipPosition.getX() + (shipPosition.getX() - evilPosition.getX());
+        result_y = shipPosition.getY() + (shipPosition.getY() - evilPosition.getY());
+
+        return new Position(result_x, result_y);
+
     }
 
     private void addNodes(GameState state) {
@@ -56,6 +71,32 @@ public class HobbitBrain implements Brain {
     private Position chooseTarget(GameState state) {
         index = (index + 1)  % nodes.size();
         return nodes.get(index);
+    }
+
+    private Collection<ShipCommand> rotateTowardsPosition(GameState state, Position target) {
+        ShipState ship = state.getShipState();
+        double xdist = target.getX() - ship.getPosition().getX();
+        double ydist = target.getY() - ship.getPosition().getY();
+
+        double angle = Math.toDegrees(Math.atan(ydist/xdist));
+
+
+        if (xdist >= 0){
+            if (ydist < 0){
+                angle = 360 + angle;
+            }
+        } else {
+            angle = 180 + angle;
+        }
+
+
+        if (Math.abs(angle - ship.getRotation()) < 5 && ship.getVelocity().getSpeed() > 100){
+            return null;
+        } else if (angle - ship.getRotation() > 0){
+            return Collections.singleton(ShipCommand.TURN_PORT);
+        } else {
+            return Collections.singleton(ShipCommand.TURN_STARBOARD);
+        }
     }
 
     private Collection<ShipCommand> driveTowardsPosition(GameState state, Position target) {
