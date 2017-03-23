@@ -37,7 +37,7 @@ public class HobbitBrain implements Brain {
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
-            if (entitiesInRadius.get(i).getSize() < 30) {
+            if (entitiesInRadius.get(i).getSize() == 25 || entitiesInRadius.get(i).getSize() == 75) {
                 Collection<ShipCommand> result = driveTowardsPosition(state, entitiesInRadius.get(i).getPosition());
                 if (result != null) {
                     commands.addAll(rotateTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
@@ -45,9 +45,26 @@ public class HobbitBrain implements Brain {
                     return commands;
                 }
             }
+            else { // large/medium asteroid
+
+                commands.addAll(driveTowardsPosition(state,
+                        findOppositePosition(state.getShipState().getPosition(), entitiesInRadius.get(i).getPosition())));
+
+            }
         }
 
         return driveTowardsPosition(state, target);
+    }
+
+    private Position findOppositePosition(Position shipPosition, Position evilPosition) {
+        double result_x = 0.0;
+        double result_y = 0.0;
+
+        result_x = shipPosition.getX() + (shipPosition.getX() - evilPosition.getX());
+        result_y = shipPosition.getY() + (shipPosition.getY() - evilPosition.getY());
+
+        return new Position(result_x, result_y);
+
     }
 
     private void addNodes(GameState state) {
