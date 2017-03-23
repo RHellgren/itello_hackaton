@@ -16,26 +16,58 @@ public class HobbitBrain implements Brain {
 
     private int entListSize = Integer.MAX_VALUE;
     private EntityState packet;
-    private Position polestar = new Position(0.0, 0.0);
+    private Position middle = null;
 
     public Collection<ShipCommand> commandsToSend(GameState state) {
-
+        if(middle == null)
+            middle = new Position(state.getUniverseInfo().getWidth()/2,state.getUniverseInfo().getHeight()/2);
+        return driveTowardsPosition(state, middle);
+        /*
         Collection<ShipCommand> commands = new ArrayList<>();
 
         List<EntityState> enemyShips = new ArrayList<>(state.getEnemyStates());
 
         List<EntityState> asteroids = new ArrayList<>(state.getAsteroidStates());
-        List<EntityState> asteroids_ML = new ArrayList<EntityState>();
-        List<EntityState> asteroids_S = new ArrayList<EntityState>();
+        List<EntityState> asteroids_ML = new ArrayList<>();
+        List<EntityState> asteroids_S = new ArrayList<>();
 
         sortAsteroids(asteroids, asteroids_ML, asteroids_S);
 
         List<EntityState> entitiesInRadius = findThingsInZone(5.0, state.getShipState(), asteroids, enemyShips);
 
 
-        return Collections.singleton(ShipCommand.THRUST);
+        return Collections.singleton(ShipCommand.THRUST);*/
     }
 
+    private Collection<ShipCommand> driveTowardsPosition(GameState state, Position target) {
+        ShipState ship = state.getShipState();
+        double xdist = target.getX() - ship.getPosition().getX();
+        double ydist = target.getY() - ship.getPosition().getY();
+
+        double angle = Math.toDegrees(Math.atan(ydist/xdist));
+
+
+        if (xdist >= 0){
+            if (ydist < 0){
+                angle = 360 + angle;
+            }
+        } else {
+            angle = 180 + angle;
+        }
+
+
+        if (Math.abs(angle - ship.getRotation()) < 5){
+            if (ship.getVelocity().getSpeed() > 100){
+                return Collections.singleton(null);
+            } else {
+                return Collections.singleton(ShipCommand.THRUST);
+            }
+        } else if (angle - ship.getRotation() > 0){
+            return Collections.singleton(ShipCommand.TURN_PORT);
+        } else {
+            return Collections.singleton(ShipCommand.TURN_STARBOARD);
+        }
+    }
 
     private EntityState getClosestEnemy(GameState state) {
         ShipState ship = state.getShipState();
