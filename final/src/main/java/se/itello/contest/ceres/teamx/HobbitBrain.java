@@ -13,15 +13,25 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class HobbitBrain implements Brain {
-
-    private int entListSize = Integer.MAX_VALUE;
+    private int index = -1;
+    private Position target;
     private EntityState packet;
-    private Position middle = null;
+    private ArrayList<Position> nodes;
 
     public Collection<ShipCommand> commandsToSend(GameState state) {
-        if(middle == null)
-            middle = new Position(state.getUniverseInfo().getWidth()/2,state.getUniverseInfo().getHeight()/2);
-        return driveTowardsPosition(state, middle);
+        if(nodes == null) {
+            nodes = new ArrayList<>();
+            addNodes(state);
+        }
+        if(target == null || calculateDistance(state.getShipState().getPosition(), target) < 10) {
+            target = chooseTarget(state);
+        }
+
+        if(state.getShipState().getStepsUntilShipCanShoot() == 0 ) {
+            return Collections.singleton(ShipCommand.SHOOT);
+        }
+
+        return driveTowardsPosition(state, target);
         /*
         Collection<ShipCommand> commands = new ArrayList<>();
 
@@ -37,6 +47,18 @@ public class HobbitBrain implements Brain {
 
 
         return Collections.singleton(ShipCommand.THRUST);*/
+    }
+
+    private void addNodes(GameState state) {
+        nodes.add(new Position(3*state.getUniverseInfo().getWidth()/4,3*state.getUniverseInfo().getHeight()/4));
+        nodes.add(new Position(state.getUniverseInfo().getWidth()/4,3*state.getUniverseInfo().getHeight()/4));
+        nodes.add(new Position(3*state.getUniverseInfo().getWidth()/4,state.getUniverseInfo().getHeight()/4));
+        nodes.add(new Position(state.getUniverseInfo().getWidth()/4,state.getUniverseInfo().getHeight()/4));
+    }
+
+    private Position chooseTarget(GameState state) {
+        index = (index + 1)  % nodes.size();
+        return nodes.get(index);
     }
 
     private Collection<ShipCommand> driveTowardsPosition(GameState state, Position target) {
