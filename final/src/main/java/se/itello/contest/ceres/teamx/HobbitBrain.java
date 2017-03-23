@@ -29,14 +29,16 @@ public class HobbitBrain implements Brain {
 
         Collection<ShipCommand> commands = new ArrayList<>();
 
-        List<EntityState> entitiesInRadius = findThingsInZone(100.0, state);
+        List<EntityState> entitiesInRadius = findThingsInZone(150.0, state);
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
-            if (entitiesInRadius.get(i).getSize() == 25 || entitiesInRadius.get(i).getSize() == 75) {
+            if (entitiesInRadius.get(i).getSize() == 75) {
+                if(calculateDistance(entitiesInRadius.get(i).getPosition(), state.getShipState().getPosition()) > 100)
+                    break;
                 Collection<ShipCommand> result = driveTowardsPosition(state, entitiesInRadius.get(i).getPosition());
                 if (result != null) {
-                    commands.addAll(rotateTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
+                    commands.addAll(driveTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
                     commands.add(ShipCommand.SHOOT);
                     return commands;
                 }
@@ -90,7 +92,7 @@ public class HobbitBrain implements Brain {
         }
 
 
-        if (Math.abs(angle - ship.getRotation()) < 5 && ship.getVelocity().getSpeed() > 100){
+        if (Math.abs(angle - ship.getRotation()) < 5 && ship.getVelocity().getSpeed() > 150){
             return null;
         } else if (angle - ship.getRotation() > 0){
             return Collections.singleton(ShipCommand.TURN_PORT);
