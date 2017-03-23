@@ -58,7 +58,7 @@ public class HobbitBrain implements Brain {
 
         if (Math.abs(angle - ship.getRotation()) < 5){
             if (ship.getVelocity().getSpeed() > 100){
-                return Collections.singleton(null);
+                return null;
             } else {
                 return Collections.singleton(ShipCommand.THRUST);
             }
