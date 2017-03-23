@@ -27,13 +27,9 @@ public class HobbitBrain implements Brain {
             target = chooseTarget(state);
         }
 
-        if(state.getShipState().getStepsUntilShipCanShoot() == 0 ) {
-            return Collections.singleton(ShipCommand.SHOOT);
-        }
-
         Collection<ShipCommand> commands = new ArrayList<>();
 
-        List<EntityState> entitiesInRadius = findThingsInZone(100.0, state);
+        List<EntityState> entitiesInRadius = findThingsInZone(120.0, state);
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
