@@ -110,7 +110,6 @@ public class HobbitBrain implements Brain {
                 closestEnemy = i;
             }
         }
-
         return enemies.get(closestEnemy);
     }
 
