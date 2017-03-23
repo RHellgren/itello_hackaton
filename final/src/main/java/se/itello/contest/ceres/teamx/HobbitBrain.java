@@ -6,9 +6,12 @@ import se.itello.contest.ceres.api.ShipCommand;
 import se.itello.contest.ceres.api.GameState;
 import se.itello.contest.ceres.api.Brain;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 public class HobbitBrain implements Brain {
 
@@ -17,66 +20,66 @@ public class HobbitBrain implements Brain {
 
     public Collection<ShipCommand> commandsToSend(GameState state) {
 
-        if (state.getAsteroidStates().size() < entListSize){
-            packet = findClosestEntity(state);
-            entListSize = state.getAsteroidStates().size();
-        }
+        Collection<ShipCommand> commands = new Collection<ShipCommand>();
 
-        ShipState ship = state.getShipState();
+        List<EntityState> enemyShips = new ArrayList<>(state.getEnemyStates());
 
-        double xdist = packet.getPosition().getX() - ship.getPosition().getX();
-        double ydist = packet.getPosition().getY() - ship.getPosition().getY();
+        List<EntityState> asteroids = new ArrayList<>(state.getAsteroidStates());
+        List<EntityState> asteroids_ML = new ArrayList<EntityState>();
+        List<EntityState> asteroids_S = new ArrayList<EntityState>();
 
-        double angle = Math.toDegrees(Math.atan(ydist/xdist));
+        sortAsteroids(asteroids, asteroids_ML, asteroids_S);
 
-
-        if (xdist >= 0){
-            if (ydist < 0){
-                angle = 360 + angle;
-            }
-        } else {
-            angle = 180 + angle;
-        }
+        List<EntityState> entitiesInRadius = findThingsInZone(5.0, state.getShipState(), asteroids, enemyShips);
 
 
-        if (Math.abs(angle - ship.getRotation()) < 5){
-            if (ship.getVelocity().getSpeed() > 100){
-                return Collections.singleton(null);
-            } else {
-                return Collections.singleton(ShipCommand.THRUST);
-            }
-        } else if (angle - ship.getRotation() > 0){
-            return Collections.singleton(ShipCommand.TURN_PORT);
-        } else {
-            return Collections.singleton(ShipCommand.TURN_STARBOARD);
-        }
+
+        return Collections.singleton(ShipCommand.THRUST);
+
+
 
     }
 
 
-    private EntityState findClosestEntity(GameState state) {
-        Iterator<EntityState> entities_iter = state.getAsteroidStates().iterator();
-        Position shipPosition = state.getShipState().getPosition();
+    private List<EntityState> findThingsInZone(double radius, ShipState ship, List<EntityState> asteroids,
+                                               List<EntityState> enemyShips) {
 
-        EntityState tempEntity, closestEntity = null;
-        double tempDistance, closestDistance = Double.MAX_VALUE;
+        List<EntityState> inRadius = new ArrayList<>();
+        List<EntityState> allEntityStates = new ArrayList<>(enemyShips).addAll(asteroids);
 
-        while(entities_iter.hasNext()) {
-            tempEntity = entities_iter.next();
-            tempDistance = calculateDistance(shipPosition, tempEntity.getPosition());
+        Iterator<EntityState> iterator = allEntityStates.iterator();
 
-            if (tempDistance < closestDistance) {
-                closestDistance = tempDistance;
-                closestEntity = tempEntity;
+        while(iterator.hasNext()) {
+            EntityState state = iterator.next();
+            if(calculateDistance(state.getPosition(), ship.getPosition()) <= radius) {
+                inRadius.add(state);
             }
         }
 
-        return closestEntity;
+        return inRadius;
+
+    }
+
+    private void sortAsteroids(List<EntityState> asteroids, List<EntityState> asteroids_ML,
+                               List<EntityState> asteroids_S) {
+
+        Iterator<EntityState> asteroids_iter = asteroids.iterator();
+
+        while(asteroids_iter.hasNext()) {
+            EntityState asteroid = asteroids_iter.next();
+            if (asteroid.getSize() > 30) {
+                asteroids_ML.add(asteroid);
+            }
+            else {
+                asteroids_S.add(asteroid);
+            }
+        }
+
     }
 
     // Note: Sqrt not needed as the distances will still have same relations
     private double calculateDistance(Position a, Position b) {
-        return Math.pow((b.getX() - a.getX()), 2.0) +  Math.pow((b.getY() - a.getY()), 2.0);
+        return Math.sqrt(Math.pow((b.getX() - a.getX()), 2.0) +  Math.pow((b.getY() - a.getY()), 2.0));
     }
 
     public String name() {
