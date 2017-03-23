@@ -12,7 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
+
 public class HobbitBrain implements Brain {
+    final int TOP_SPEED = 150;
     private int index = -1;
     private Position target;
     private EntityState packet;
@@ -27,15 +29,16 @@ public class HobbitBrain implements Brain {
             target = chooseTarget(state);
         }
 
+        if(state.getShipState().getStepsUntilShipCanShoot() == 0 )
+            return Collections.singleton(ShipCommand.SHOOT);
+
         Collection<ShipCommand> commands = new ArrayList<>();
 
-        List<EntityState> entitiesInRadius = findThingsInZone(150.0, state);
+        List<EntityState> entitiesInRadius = findThingsInZone(200.0, state);
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
             if (entitiesInRadius.get(i).getSize() == 75) {
-                if(calculateDistance(entitiesInRadius.get(i).getPosition(), state.getShipState().getPosition()) > 100)
-                    break;
                 Collection<ShipCommand> result = driveTowardsPosition(state, entitiesInRadius.get(i).getPosition());
                 if (result != null) {
                     commands.addAll(driveTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
@@ -43,7 +46,7 @@ public class HobbitBrain implements Brain {
                     return commands;
                 }
             }
-            else { // large/medium asteroid
+            else { // small/large/medium asteroid
                 return driveTowardsPosition(state,
                         findOppositePosition(state.getShipState().getPosition(), entitiesInRadius.get(i).getPosition()));
             }
@@ -64,41 +67,12 @@ public class HobbitBrain implements Brain {
     }
 
     private void addNodes(GameState state) {
-        nodes.add(new Position(3*state.getUniverseInfo().getWidth()/4,3*state.getUniverseInfo().getHeight()/4));
-        nodes.add(new Position(state.getUniverseInfo().getWidth()/4,3*state.getUniverseInfo().getHeight()/4));
-        nodes.add(new Position(3*state.getUniverseInfo().getWidth()/4,state.getUniverseInfo().getHeight()/4));
-        nodes.add(new Position(state.getUniverseInfo().getWidth()/4,state.getUniverseInfo().getHeight()/4));
+        nodes.add(new Position(state.getUniverseInfo().getWidth()/2,state.getUniverseInfo().getHeight()/2));
     }
 
     private Position chooseTarget(GameState state) {
         index = (index + 1)  % nodes.size();
         return nodes.get(index);
-    }
-
-    private Collection<ShipCommand> rotateTowardsPosition(GameState state, Position target) {
-        ShipState ship = state.getShipState();
-        double xdist = target.getX() - ship.getPosition().getX();
-        double ydist = target.getY() - ship.getPosition().getY();
-
-        double angle = Math.toDegrees(Math.atan(ydist/xdist));
-
-
-        if (xdist >= 0){
-            if (ydist < 0){
-                angle = 360 + angle;
-            }
-        } else {
-            angle = 180 + angle;
-        }
-
-
-        if (Math.abs(angle - ship.getRotation()) < 5 && ship.getVelocity().getSpeed() > 150){
-            return null;
-        } else if (angle - ship.getRotation() > 0){
-            return Collections.singleton(ShipCommand.TURN_PORT);
-        } else {
-            return Collections.singleton(ShipCommand.TURN_STARBOARD);
-        }
     }
 
     private Collection<ShipCommand> driveTowardsPosition(GameState state, Position target) {
@@ -119,7 +93,7 @@ public class HobbitBrain implements Brain {
 
 
         if (Math.abs(angle - ship.getRotation()) < 5){
-            if (ship.getVelocity().getSpeed() > 100){
+            if (ship.getVelocity().getSpeed() > TOP_SPEED){
                 return null;
             } else {
                 return Collections.singleton(ShipCommand.THRUST);
