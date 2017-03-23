@@ -21,30 +21,24 @@ public class HobbitBrain implements Brain {
     public Collection<ShipCommand> commandsToSend(GameState state) {
         if(middle == null)
             middle = new Position(state.getUniverseInfo().getWidth()/2,state.getUniverseInfo().getHeight()/2);
-        return driveTowardsPosition(state, middle);
-        /*
+        //return driveTowardsPosition(state, middle);
         Collection<ShipCommand> commands = new ArrayList<>();
 
-        List<EntityState> enemyShips = new ArrayList<>(state.getEnemyStates());
-
-        List<EntityState> asteroids = new ArrayList<>(state.getAsteroidStates());
-        List<EntityState> asteroids_ML = new ArrayList<>();
-        List<EntityState> asteroids_S = new ArrayList<>();
-
-        sortAsteroids(asteroids, asteroids_ML, asteroids_S);
-
-        List<EntityState> entitiesInRadius = findThingsInZone(5.0, state.getShipState(), asteroids, enemyShips);
+        List<EntityState> entitiesInRadius = findThingsInZone(100.0, state);
 
         // Shoot all small asteroids
         for(int i = 0; i < entitiesInRadius.size(); i++) {
             if (entitiesInRadius.get(i).getSize() < 30) {
-                commands.addAll(driveTowardsPosition(p1));
-                commands.add(ShipCommand.SHOOT);
+                Collection<ShipCommand> result = driveTowardsPosition(state, entitiesInRadius.get(i).getPosition());
+                if (result != null) {
+                    commands.addAll(driveTowardsPosition(state, entitiesInRadius.get(i).getPosition()));
+                    commands.add(ShipCommand.SHOOT);
+                    return commands;
+                }
             }
         }
 
-
-        return Collections.singleton(ShipCommand.THRUST);*/
+        return driveTowardsPosition(state, middle);
     }
 
     private Collection<ShipCommand> driveTowardsPosition(GameState state, Position target) {
@@ -92,10 +86,14 @@ public class HobbitBrain implements Brain {
         return enemies.get(closestEnemy);
     }
 
-    private List<EntityState> findThingsInZone(double radius, ShipState ship, List<EntityState> asteroids,
-                                               List<EntityState> enemyShips) {
+    private List<EntityState> findThingsInZone(double radius, GameState state) {
 
         List<EntityState> inRadius = new ArrayList<>();
+        ShipState ship = state.getShipState();
+
+        List<EntityState> enemyShips = new ArrayList<>(state.getEnemyStates());
+        List<EntityState> asteroids = new ArrayList<>(state.getAsteroidStates());
+
         List<EntityState> allEntityStates = new ArrayList<>(enemyShips);
         allEntityStates.addAll(asteroids);
 
