@@ -49,6 +49,7 @@ public class HobbitBrain implements Brain {
 
                 commands.addAll(driveTowardsPosition(state,
                         findOppositePosition(state.getShipState().getPosition(), entitiesInRadius.get(i).getPosition())));
+                return commands;
 
             }
         }
