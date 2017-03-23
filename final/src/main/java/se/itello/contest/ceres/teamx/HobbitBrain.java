@@ -14,6 +14,6 @@ public class HobbitBrain implements Brain {
     }
 
     public String name() {
-        return "Full Throttle";
+        return "What about second breakfast";
     }
 }
